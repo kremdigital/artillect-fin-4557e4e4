@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Артиллект · Финансовый контроль · P&L</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0C141D; --surf:#13202C; --surf2:#1A2937; --line:#27394B; --line2:#324a60;
+  --txt:#E9F0F6; --mut:#8AA0B4; --mut2:#5f7588;
+  --money:#E7B45A; --b2c:#6FB1E0; --b2b:#E7B45A; --other:#A78BE0;
+  --pos:#5FCB9B; --neg:#EC8569; --warn:#E7B45A;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--txt);font-family:"Golos Text",sans-serif;-webkit-font-smoothing:antialiased}
+body{background:
+  radial-gradient(1100px 600px at 12% -5%, rgba(231,180,90,.07), transparent 60%),
+  radial-gradient(900px 500px at 100% 0%, rgba(111,177,224,.06), transparent 55%),
+  var(--bg);}
+.wrap{max-width:1240px;margin:0 auto;padding:28px 22px 80px}
+.mono{font-family:"JetBrains Mono",monospace;font-variant-numeric:tabular-nums}
+/* topbar */
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;padding-bottom:20px;border-bottom:1px solid var(--line)}
+.brand{display:flex;flex-direction:column;gap:6px}
+.wm{font-family:"Unbounded";font-weight:800;letter-spacing:.14em;font-size:13px;color:var(--money)}
+.title{font-family:"Unbounded";font-weight:600;font-size:26px;line-height:1.05;margin:0}
+.sub{color:var(--mut);font-size:13.5px}
+.badges{display:flex;gap:8px;flex-wrap:wrap}
+.badge{font-size:11.5px;padding:6px 11px;border:1px solid var(--line2);border-radius:999px;color:var(--mut);background:var(--surf)}
+.badge b{color:var(--txt);font-weight:600}
+.badge.live{color:var(--pos);border-color:rgba(95,203,155,.4)}
+.badge.live::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--pos);margin-right:7px;vertical-align:middle;box-shadow:0 0 8px var(--pos)}
+/* hero */
+.hero{display:grid;grid-template-columns:repeat(4,1fr) 1.5fr;gap:14px;margin:22px 0}
+.card{background:linear-gradient(180deg,var(--surf),var(--surf2));border:1px solid var(--line);border-radius:16px;padding:18px}
+.kpi{opacity:0;transform:translateY(10px);animation:rise .6s cubic-bezier(.2,.7,.3,1) forwards}
+.kpi:nth-child(1){animation-delay:.05s}.kpi:nth-child(2){animation-delay:.12s}
+.kpi:nth-child(3){animation-delay:.19s}.kpi:nth-child(4){animation-delay:.26s}.kpi:nth-child(5){animation-delay:.33s}
+@keyframes rise{to{opacity:1;transform:none}}
+.kpi .lab{font-size:12px;color:var(--mut);letter-spacing:.02em}
+.kpi .val{font-family:"Unbounded";font-weight:600;font-size:25px;margin-top:10px;letter-spacing:-.01em}
+.kpi .note{font-size:11.5px;color:var(--mut2);margin-top:7px}
+.val.pos{color:var(--pos)} .val.neg{color:var(--neg)} .val.money{color:var(--money)}
+.wf .lab{font-size:12px;color:var(--mut)}
+.wf-head{display:flex;justify-content:space-between;align-items:baseline}
+.wf-head .r{font-size:11.5px;color:var(--mut2)}
+#wfsvg{width:100%;height:138px;margin-top:6px;display:block}
+/* notes */
+.flags{background:var(--surf);border:1px solid var(--line);border-left:3px solid var(--money);border-radius:12px;padding:14px 16px;margin:6px 0 22px;font-size:13px;color:var(--mut)}
+.flags b{color:var(--txt)}
+.flags ul{margin:8px 0 0;padding-left:18px}.flags li{margin:4px 0}
+/* controls */
+.bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:0 0 16px}
+.seg{display:inline-flex;background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:3px}
+.seg button{font-family:inherit;font-size:12.5px;color:var(--mut);background:none;border:0;padding:7px 13px;border-radius:7px;cursor:pointer;transition:.15s}
+.seg button.on{background:var(--money);color:#1a130a;font-weight:600}
+.bar .hint{font-size:12px;color:var(--mut2)}
+/* grid */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.panel{background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:16px 16px 10px}
+.panel h3{margin:0 0 2px;font-size:14px;font-weight:600}
+.panel .cap{font-size:11.5px;color:var(--mut2);margin-bottom:10px}
+.cv{position:relative;height:240px}
+.span2{grid-column:1/-1}
+.ue-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:4px 0 6px}
+.ue{background:var(--surf2);border:1px solid var(--line);border-radius:12px;padding:12px}
+.ue .lab{font-size:11px;color:var(--mut)}
+.ue .v{font-family:"Unbounded";font-weight:600;font-size:19px;margin-top:6px}
+.ue .v.money{color:var(--money)}.ue .v.neg{color:var(--neg)}
+@media(max-width:900px){.ue-grid{grid-template-columns:repeat(2,1fr)}}
+/* table */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+thead th{color:var(--mut);font-weight:500;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;position:sticky;top:0;background:var(--surf)}
+tbody td{font-family:"JetBrains Mono",monospace;font-variant-numeric:tabular-nums;color:var(--txt)}
+tbody td:first-child{font-family:"Golos Text";color:var(--mut)}
+tr.sec td{color:var(--mut2);font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom-color:var(--line2);padding-top:14px}
+tr.tot td{font-weight:700}tr.tot td:first-child{color:var(--txt);font-weight:600}
+tr.rev td:first-child{color:var(--b2c)} .colmoney{color:var(--money)!important}
+tr.gross td,tr.ebitda td,tr.net td{background:rgba(255,255,255,.02)}
+tr.ebitda td:first-child,tr.net td:first-child,tr.gross td:first-child{color:var(--txt);font-weight:600}
+.tot-col{border-left:1px solid var(--line2)}
+.pos{color:var(--pos)}.neg{color:var(--neg)}
+.foot{margin-top:26px;color:var(--mut2);font-size:11.5px;line-height:1.6}
+@media(max-width:900px){.hero{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}.wf{grid-column:1/-1}
+ .tblwrap{overflow-x:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">
+      <span class="wm">АРТИЛЛЕКТ</span>
+      <h1 class="title">Финансовый контроль · P&L</h1>
+      <span class="sub">ООО «КРЕМ ДИДЖИТАЛ» · банк + платформа Артиллект + Робокасса + Яндекс Директ</span>
+    </div>
+    <div class="badges">
+      <span class="badge"><b>Ноя 2025 — Май 2026</b> · 7 мес</span>
+      <span class="badge">Метод: <b>кассовый</b></span>
+      <span class="badge live">тестовый прогон</span>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="card kpi"><div class="lab">Выручка</div><div class="val money" id="k_rev"></div><div class="note">B2C (Робокасса) + B2B (банк)</div></div>
+    <div class="card kpi"><div class="lab">Расходы</div><div class="val" id="k_exp"></div><div class="note">COGS + OpEx + налоги</div></div>
+    <div class="card kpi"><div class="lab">Чистый поток</div><div class="val neg" id="k_net"></div><div class="note" id="k_burn"></div></div>
+    <div class="card kpi"><div class="lab">Валовая маржа</div><div class="val" id="k_gm"></div><div class="note">после COGS и эквайринга</div></div>
+    <div class="card kpi wf">
+      <div class="wf-head"><span class="lab">Движение денег за период</span><span class="r">по выписке</span></div>
+      <svg id="wfsvg" viewBox="0 0 520 138" preserveAspectRatio="none"></svg>
+    </div>
+  </div>
+
+  <div class="flags">
+    <b>Как читать эти цифры.</b> Выручка очищена от задвоения: B2C берётся из Робокассы (gross), её выплаты в банке исключены.
+    Эквайринг Робокассы отнесён в COGS. Один контракт ООО «КБС» (2,1 млн в апреле) даёт основную долю B2B — это концентрация на одном клиенте.
+    <ul>
+      <li><b>Маркетинг:</b> на карту в Директ залито 161 000 ₽, фактически открутилось 59 584 ₽ — переключатель ниже меняет базу расчёта.</li>
+      <li><b>ФОТ</b> показан как выплаты по реестру; НДФЛ и взносы — в строке «Налоги и взносы» (кассовый метод).</li>
+    </ul>
+  </div>
+
+  <div class="bar">
+    <span class="hint">База маркетинга:</span>
+    <div class="seg" id="mktseg">
+      <button data-m="cons" class="on">Факт. открутка Директа</button>
+      <button data-m="topup">Пополнения карты</button>
+    </div>
+    <span class="hint" id="mkthint"></span>
+  </div>
+
+  <div class="grid">
+    <div class="panel"><h3>Выручка против расходов</h3><div class="cap">по месяцам, ₽ · линия — чистый поток</div><div class="cv"><canvas id="c_rve"></canvas></div></div>
+    <div class="panel"><h3>Структура выручки</h3><div class="cap">B2C · B2B · прочее, ₽</div><div class="cv"><canvas id="c_rev"></canvas></div></div>
+    <div class="panel"><h3>Структура расходов</h3><div class="cap">всего за период, ₽</div><div class="cv"><canvas id="c_exp"></canvas></div></div>
+    <div class="panel"><h3>B2C · платформа Артиллект</h3><div class="cap">выручка (столбцы) и активные платящие (линия)</div><div class="cv"><canvas id="c_b2c"></canvas></div></div>
+    <div class="panel"><h3>B2C · структура и ARPU</h3><div class="cap">подписки/токены (столбцы, ₽) · ARPU (линия, ₽/мес, прав. ось)</div><div class="cv"><canvas id="c_mix"></canvas></div></div>
+    <div class="panel span2"><h3>Эффективность маркетинга · Яндекс Директ</h3><div class="cap">столбцы — расход в ₽ (левая ось) · линия — конверсии, шт (правая ось)</div><div class="cv" style="height:220px"><canvas id="c_mkt"></canvas></div></div>
+  </div>
+
+  <div class="panel span2" style="margin-top:14px">
+    <h3>Юнит-экономика · факт по данным платформы</h3>
+    <div class="cap">227 платящих, июл'25–июн'26 · LTV вытянут «китами»: топ-10% дают 70% выручки</div>
+    <div class="ue-grid">
+      <div class="ue"><div class="lab">LTV средний</div><div class="v money" id="u_ltv"></div></div>
+      <div class="ue"><div class="lab">LTV медианный</div><div class="v" id="u_ltvm"></div></div>
+      <div class="ue"><div class="lab">CAC (блендед)</div><div class="v" id="u_cac"></div></div>
+      <div class="ue"><div class="lab">LTV / CAC</div><div class="v" id="u_lc"></div></div>
+      <div class="ue"><div class="lab">Churn / мес</div><div class="v neg" id="u_churn"></div></div>
+      <div class="ue"><div class="lab">Повторные покупки</div><div class="v" id="u_rep"></div></div>
+    </div>
+    <div class="cap" style="margin-top:6px">Когортное удержание платящих (доля когорты, активной через N месяцев)</div>
+    <div class="cv" style="height:200px"><canvas id="c_ret"></canvas></div>
+  </div>
+
+  <div class="panel span2" style="margin-top:14px">
+    <h3>Помесячный P&L</h3><div class="cap">кассовый метод, ₽</div>
+    <div class="tblwrap"><table id="pl"></table></div>
+  </div>
+
+  <div class="foot">
+    Источники: выписка АО «Альфа-Банк» (сч. …001462), отчёт Робокассы, отчёт Яндекс Директ · период 01.11.2025–31.05.2026.<br>
+    Категоризация банковских операций выполнена по контрагенту, назначению платежа и MCC-кодам карты. Это тестовый исторический срез; после согласования логика выносится в Claude Code для ежемесячного обновления.
+  </div>
+</div>
+
+<script>
+const D = {"months": ["2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05"], "month_labels": ["Ноя 25", "Дек 25", "Янв 26", "Фев 26", "Мар 26", "Апр 26", "Май 26"], "rev_b2c": [10332, 38752, 68396, 82948, 110591, 117700, 103361], "rev_b2b": [0, 276500, 0, 320000, 18399, 2160105, 0], "rev_other": [0, 4000, 0, 0, 0, 0, 0], "cogs_prod": [207000, 286000, 166200, 100000, 390350, 240000, 380000], "cogs_infra": [9491, 26570, 0, 23040, 23971, 81472, 7832], "cogs_acq": [320, 1004, 1893, 2567, 3225, 3378, 2654], "opex_fot": [852400, 1471829, 717106, 563760, 563760, 595863, 588120], "mkt_topup": [0, 0, 61000, 0, 0, 100000, 0], "mkt_cons": [0, 0, 14448, 17362, 0, 1094, 26681], "opex_rent": [50548, 30000, 35000, 54468, 35000, 35000, 35000], "opex_legal": [0, 37000, 22700, 55000, 20000, 33000, 33000], "opex_soft": [0, 12490, 190, 190, 190, 5690, 190], "opex_travel": [58498, 0, 0, 0, 24996, 0, 33600], "opex_bank": [1189, 1289, 1837, 4336, 1377, 5416, 5775], "opex_other": [51590, 189100, 12000, 160000, 62000, 0, 0], "taxes": [171641, 496506, 0, 47041, 224196, 94885, 157081], "b2c_cnt": [18, 53, 57, 92, 124, 105, 113], "yd_clicks": [0, 0, 3141, 2940, 0, 74, 3338], "yd_conv": [0, 0, 179, 434, 0, 10, 621], "yd_spend": [0, 0, 14448, 17362, 0, 1094, 26681], "robo_settle": [0, 0, 0, 0, 0, 369444, 110648], "cash_open": 7383346.58, "cash_in": 3259095.93, "cash_out": 9754772.01, "cash_close": 887670.5, "unit": {"ltv_mean": 2648, "ltv_med": 499, "cac": 527, "churn": 0.5, "ltvcac": 5.0, "repeat": 0.37, "whale": 0.7, "arpu": 1900, "payers": 227, "retention": [100, 38, 26, 19], "retention_labels": ["Старт", "+1 мес", "+2 мес", "+3 мес"]}, "b2c_payers": [9, 24, 41, 46, 44, 42, 56], "b2c_arpu": [1148, 1615, 1668, 1803, 2513, 2802, 1846], "b2c_new": [8, 18, 27, 32, 19, 10, 25], "b2c_sub": [5992, 15985, 41862, 36757, 33073, 35673, 29976], "b2c_tok": [4340, 22767, 26534, 46191, 77518, 82027, 73385]};
+const RUB = n => new Intl.NumberFormat('ru-RU',{maximumFractionDigits:0}).format(Math.round(n))+' ₽';
+const RUBk = n => (Math.abs(n)>=1e6? (n/1e6).toFixed(2)+' млн' : new Intl.NumberFormat('ru-RU',{maximumFractionDigits:0}).format(Math.round(n)));
+const sum = a => a.reduce((x,y)=>x+y,0);
+const css = k => getComputedStyle(document.documentElement).getPropertyValue(k).trim();
+const C={txt:css('--txt'),mut:css('--mut'),line:css('--line'),money:css('--money'),b2c:css('--b2c'),b2b:css('--b2b'),other:css('--other'),pos:css('--pos'),neg:css('--neg')};
+let MB='cons'; // marketing basis
+const mkt = ()=> MB==='cons'? D.mkt_cons : D.mkt_topup;
+
+// derived monthly arrays
+const N=D.months.length, R=[...Array(N).keys()];
+const revT = R.map(i=>D.rev_b2c[i]+D.rev_b2b[i]+D.rev_other[i]);
+const cogsT= R.map(i=>D.cogs_prod[i]+D.cogs_infra[i]+D.cogs_acq[i]);
+const gross= R.map(i=>revT[i]-cogsT[i]);
+const opexT= ()=> R.map(i=>D.opex_fot[i]+mkt()[i]+D.opex_rent[i]+D.opex_legal[i]+D.opex_soft[i]+D.opex_travel[i]+D.opex_bank[i]+D.opex_other[i]);
+const ebitda=()=> R.map(i=>gross[i]-opexT()[i]);
+const net   =()=> R.map(i=>ebitda()[i]-D.taxes[i]);
+const expTotal=()=> R.map(i=>cogsT[i]+opexT()[i]+D.taxes[i]);
+
+// KPIs
+function kpis(){
+  const rev=sum(revT), exp=sum(expTotal()), nt=sum(net());
+  document.getElementById('k_rev').textContent=RUBk(rev)+' ₽';
+  document.getElementById('k_exp').textContent=RUBk(exp)+' ₽';
+  document.getElementById('k_net').textContent=(nt<0?'−':'')+RUBk(Math.abs(nt))+' ₽';
+  document.getElementById('k_burn').textContent='средний burn '+RUBk(Math.abs(nt)/N)+' ₽/мес';
+  const gm = sum(gross)/rev*100;
+  const gmEl=document.getElementById('k_gm'); gmEl.textContent=gm.toFixed(1)+'%'; gmEl.classList.add(gm>=0?'pos':'neg');
+  document.getElementById('mkthint').textContent = MB==='cons'
+    ? 'факт. расход по отчёту Директа: '+RUB(sum(D.mkt_cons))
+    : 'пополнения карты в банке: '+RUB(sum(D.mkt_topup));
+}
+
+// cash waterfall
+function waterfall(){
+  const o=D.cash_open,inn=D.cash_in,out=D.cash_out,cl=D.cash_close;
+  const peak=o+inn, max=peak*1.06, W=520,H=138,bw=92,gap=(W-bw*4)/5;
+  const y=v=>H-8-(v/max)*(H-24), h=v=>(v/max)*(H-24);
+  const bars=[
+    {x:gap, t:0, b:o, c:C.mut, lab:'Вход', v:o},
+    {x:gap*2+bw, t:o, b:peak, c:C.pos, lab:'Поступления', v:inn, sign:'+'},
+    {x:gap*3+bw*2, t:cl, b:peak, c:C.neg, lab:'Списания', v:out, sign:'−'},
+    {x:gap*4+bw*3, t:0, b:cl, c:C.money, lab:'Остаток', v:cl},
+  ];
+  let s='';
+  bars.forEach((d,i)=>{
+    const yt=y(d.b), hh=Math.max(2,h(d.b-d.t));
+    s+=`<rect x="${d.x}" y="${yt}" width="${bw}" height="${hh}" rx="3" fill="${d.c}" opacity="${i==0?.55:.9}"/>`;
+    s+=`<text x="${d.x+bw/2}" y="${yt-6}" fill="${C.txt}" font-size="12" font-family="JetBrains Mono" text-anchor="middle">${(d.sign||'')+RUBk(d.v)}</text>`;
+    s+=`<text x="${d.x+bw/2}" y="${H-1}" fill="${C.mut}" font-size="10.5" text-anchor="middle">${d.lab}</text>`;
+    if(i<3){const cx=d.x+bw, cy=y(bars[i+1].t===0?bars[i+1].b:bars[i+1].t);
+      s+=`<line x1="${cx}" y1="${y(d.b)}" x2="${bars[i+1].x}" y2="${y(d.b)}" stroke="${C.line}" stroke-dasharray="3 3"/>`;}
+  });
+  document.getElementById('wfsvg').innerHTML=s;
+}
+
+// chart defaults
+Chart.defaults.color=C.mut; Chart.defaults.font.family='JetBrains Mono';
+Chart.defaults.borderColor=C.line; Chart.defaults.plugins.legend.labels.boxWidth=10; Chart.defaults.plugins.legend.labels.font={family:'Golos Text',size:11};
+const fmtRubAxis=v=>{const a=Math.abs(v); if(a>=1e6) return (v/1e6).toFixed(1).replace('.',',')+' млн'; if(a>=1e3) return Math.round(v/1e3)+'к'; return ''+Math.round(v);};
+const axTitle=t=>({display:true,text:t,color:C.mut,font:{family:'Golos Text',size:10.5,weight:'500'}});
+const yMoney=(t='₽')=>({position:'left',title:axTitle(t),ticks:{callback:fmtRubAxis,maxTicksLimit:6}});
+const xMoney=(t='₽')=>({title:axTitle(t),ticks:{callback:fmtRubAxis,maxTicksLimit:6}});
+const yRight=(t,fmt)=>({position:'right',grid:{drawOnChartArea:false},title:axTitle(t),ticks:{callback:fmt||(v=>v)}});
+const PAD={padding:{left:8,right:10,top:8,bottom:2}};
+const tip={callbacks:{label:c=>c.dataset.label+': '+RUB(c.parsed.y!=null?c.parsed.y:c.parsed)}};
+let ch={};
+
+function charts(){
+  // rev vs exp
+  ch.rve=new Chart(c_rve,{type:'bar',data:{labels:D.month_labels,datasets:[
+    {label:'Выручка',data:revT,backgroundColor:C.money,borderRadius:4,order:2},
+    {label:'Расходы',data:expTotal(),backgroundColor:'#3a5066',borderRadius:4,order:2},
+    {label:'Чистый поток',data:net(),type:'line',borderColor:C.neg,backgroundColor:C.neg,tension:.3,pointRadius:3,order:1,yAxisID:'y'}
+  ]},options:{maintainAspectRatio:false,layout:PAD,plugins:{tooltip:tip},scales:{y:yMoney('рубли, ₽')}}});
+  // rev split
+  ch.rev=new Chart(c_rev,{type:'bar',data:{labels:D.month_labels,datasets:[
+    {label:'B2C',data:D.rev_b2c,backgroundColor:C.b2c,borderRadius:3,stack:'s'},
+    {label:'B2B',data:D.rev_b2b,backgroundColor:C.b2b,borderRadius:3,stack:'s'},
+    {label:'Прочее',data:D.rev_other,backgroundColor:C.other,borderRadius:3,stack:'s'}
+  ]},options:{maintainAspectRatio:false,layout:PAD,plugins:{tooltip:tip},scales:{x:{stacked:true},y:{stacked:true,...yMoney('рубли, ₽')}}}});
+  // exp split (horizontal)
+  const cats=[['ФОТ',sum(D.opex_fot)],['COGS производство',sum(D.cogs_prod)],['Налоги и взносы',sum(D.taxes)],
+    ['Маркетинг',sum(mkt())],['Аренда',sum(D.opex_rent)],['Бухгалтерия/юр',sum(D.opex_legal)],
+    ['Инфра/серверы',sum(D.cogs_infra)],['Командировки',sum(D.opex_travel)],['Эквайринг',sum(D.cogs_acq)],
+    ['ПО/подписки',sum(D.opex_soft)],['Банк.комиссии',sum(D.opex_bank)],['Прочее',sum(D.opex_other)]].sort((a,b)=>b[1]-a[1]);
+  ch.exp=new Chart(c_exp,{type:'bar',data:{labels:cats.map(c=>c[0]),datasets:[{label:'Расход',data:cats.map(c=>c[1]),
+    backgroundColor:cats.map((_,i)=>i==0?C.neg:i<3?'#c96f57':'#3a5066'),borderRadius:4}]},
+    options:{indexAxis:'y',maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>RUB(c.parsed.x)}}},layout:PAD,scales:{x:xMoney('рубли, ₽')}}});
+  // b2c
+  ch.b2c=new Chart(c_b2c,{data:{labels:D.month_labels,datasets:[
+    {type:'bar',label:'Выручка B2C',data:D.rev_b2c,backgroundColor:C.b2c,borderRadius:4,yAxisID:'y',order:2},
+    {type:'line',label:'Активные платящие',data:D.b2c_payers,borderColor:C.pos,backgroundColor:C.pos,tension:.3,pointRadius:3,borderWidth:2.5,yAxisID:'y1',order:1}
+  ]},options:{maintainAspectRatio:false,layout:PAD,plugins:{tooltip:{callbacks:{label:c=>c.dataset.label+': '+(c.dataset.type==='line'?c.parsed.y+' чел':RUB(c.parsed.y))}}},
+    scales:{y:yMoney('выручка B2C, ₽'),y1:yRight('платящих, чел',v=>v)}}});
+  ch.mix=new Chart(c_mix,{data:{labels:D.month_labels,datasets:[
+    {type:'bar',label:'Подписки',data:D.b2c_sub,backgroundColor:C.money,borderRadius:3,stack:'s',yAxisID:'y',order:3},
+    {type:'bar',label:'Токены',data:D.b2c_tok,backgroundColor:'#3a5066',borderRadius:3,stack:'s',yAxisID:'y',order:3},
+    {type:'line',label:'ARPU',data:D.b2c_arpu,borderColor:C.b2c,backgroundColor:C.b2c,tension:.3,pointRadius:3,borderWidth:2.5,yAxisID:'y1',order:1}
+  ]},options:{maintainAspectRatio:false,layout:PAD,plugins:{tooltip:{callbacks:{label:c=>c.dataset.label+': '+RUB(c.parsed.y)}}},
+    scales:{x:{stacked:true},y:{stacked:true,...yMoney('выручка B2C, ₽')},y1:yRight('ARPU, ₽/мес',v=>v)}}});
+  // marketing
+  ch.mkt=new Chart(c_mkt,{data:{labels:D.month_labels,datasets:[
+    {type:'bar',label:'Открутка, ₽',data:D.yd_spend,backgroundColor:C.money,borderRadius:4,yAxisID:'y',order:2},
+    {type:'line',label:'Конверсии',data:D.yd_conv,borderColor:C.b2c,backgroundColor:C.b2c,tension:.3,pointRadius:3,borderWidth:2.5,yAxisID:'y1',order:1}
+  ]},options:{maintainAspectRatio:false,layout:PAD,plugins:{tooltip:{callbacks:{label:c=>c.dataset.label+': '+(c.dataset.type==='line'?c.parsed.y+' конв.':RUB(c.parsed.y))}}},
+    scales:{y:yMoney('расход на рекламу, ₽'),y1:yRight('конверсии, шт',v=>v)}}});
+  const U=D.unit;
+  ch.ret=new Chart(c_ret,{type:'line',data:{labels:U.retention_labels,datasets:[
+    {label:'Удержание',data:U.retention,borderColor:C.b2c,backgroundColor:'rgba(111,177,224,.15)',fill:true,tension:.3,pointRadius:4,borderWidth:2.5}
+  ]},options:{maintainAspectRatio:false,layout:PAD,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y+'%'}}},
+    scales:{y:{title:axTitle('удержание когорты, %'),min:0,max:100,ticks:{callback:v=>v+'%'}}}}});
+}
+
+// table
+function table(){
+  const ML=D.month_labels;
+  const rowsDef=[
+    ['sec','Выручка'],
+    ['rev','B2C · платформа',D.rev_b2c],
+    ['rev','B2B · банк',D.rev_b2b],
+    ['rev','Прочий доход',D.rev_other],
+    ['tot','Итого выручка',revT],
+    ['sec','Себестоимость (COGS)'],
+    ['','Производство / подряд',D.cogs_prod.map(x=>-x)],
+    ['','Инфраструктура / серверы',D.cogs_infra.map(x=>-x)],
+    ['','Эквайринг Робокассы',D.cogs_acq.map(x=>-x)],
+    ['gross','Валовая прибыль',gross],
+    ['sec','Операционные расходы'],
+    ['','ФОТ (выплаты)',D.opex_fot.map(x=>-x)],
+    ['','Маркетинг',mkt().map(x=>-x)],
+    ['','Аренда',D.opex_rent.map(x=>-x)],
+    ['','Бухгалтерия / юр.',D.opex_legal.map(x=>-x)],
+    ['','ПО / подписки',D.opex_soft.map(x=>-x)],
+    ['','Командировки',D.opex_travel.map(x=>-x)],
+    ['','Банковские комиссии',D.opex_bank.map(x=>-x)],
+    ['','Прочие расходы',D.opex_other.map(x=>-x)],
+    ['ebitda','EBITDA',ebitda()],
+    ['sec','Ниже EBITDA'],
+    ['','Налоги и взносы',D.taxes.map(x=>-x)],
+    ['net','Чистый поток (касса)',net()],
+  ];
+  let h='<thead><tr><th>Статья</th>'+ML.map(m=>'<th>'+m+'</th>').join('')+'<th class="tot-col">Итого</th></tr></thead><tbody>';
+  for(const r of rowsDef){
+    if(r[0]==='sec'){h+='<tr class="sec"><td colspan="'+(ML.length+2)+'">'+r[1]+'</td></tr>';continue;}
+    const arr=r[2], t=sum(arr);
+    const cell=v=>{const cl=(r[0]==='ebitda'||r[0]==='net')?(v>=0?'pos':'neg'):'';return '<td class="'+cl+'">'+(v===0?'—':(v<0?'−':'')+RUBk(Math.abs(v)))+'</td>';};
+    h+='<tr class="'+r[0]+'"><td>'+r[1]+'</td>'+arr.map(cell).join('')+'<td class="tot-col '+((r[0]==='ebitda'||r[0]==='net')?(t>=0?'pos':'neg'):'')+'">'+(t<0?'−':'')+RUBk(Math.abs(t))+'</td></tr>';
+  }
+  document.getElementById('pl').innerHTML=h+'</tbody>';
+}
+
+function refresh(){ // on marketing toggle
+  kpis();
+  ch.rve.data.datasets[1].data=expTotal(); ch.rve.data.datasets[2].data=net(); ch.rve.update();
+  // exp split recompute marketing slice
+  ch.exp.destroy(); const cats=[['ФОТ',sum(D.opex_fot)],['COGS производство',sum(D.cogs_prod)],['Налоги и взносы',sum(D.taxes)],
+    ['Маркетинг',sum(mkt())],['Аренда',sum(D.opex_rent)],['Бухгалтерия/юр',sum(D.opex_legal)],
+    ['Инфра/серверы',sum(D.cogs_infra)],['Командировки',sum(D.opex_travel)],['Эквайринг',sum(D.cogs_acq)],
+    ['ПО/подписки',sum(D.opex_soft)],['Банк.комиссии',sum(D.opex_bank)],['Прочее',sum(D.opex_other)]].sort((a,b)=>b[1]-a[1]);
+  ch.exp=new Chart(c_exp,{type:'bar',data:{labels:cats.map(c=>c[0]),datasets:[{label:'Расход',data:cats.map(c=>c[1]),
+    backgroundColor:cats.map((_,i)=>i==0?C.neg:i<3?'#c96f57':'#3a5066'),borderRadius:4}]},
+    options:{indexAxis:'y',maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>RUB(c.parsed.x)}}},layout:PAD,scales:{x:xMoney('рубли, ₽')}}});
+  table();
+}
+
+document.getElementById('mktseg').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b)return;
+  MB=b.dataset.m; [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b)); refresh();
+});
+
+function unitTiles(){
+  const U=D.unit;
+  document.getElementById('u_ltv').textContent=RUB(U.ltv_mean);
+  document.getElementById('u_ltvm').textContent=RUB(U.ltv_med);
+  document.getElementById('u_cac').textContent=RUB(U.cac);
+  document.getElementById('u_lc').textContent=U.ltvcac.toFixed(1)+'x';
+  document.getElementById('u_churn').textContent=(U.churn*100).toFixed(0)+'%';
+  document.getElementById('u_rep').textContent=(U.repeat*100).toFixed(0)+'%';
+}
+kpis(); waterfall(); table(); unitTiles();
+if(document.fonts && document.fonts.ready){document.fonts.ready.then(charts);} else {charts();}
+window.addEventListener('resize',waterfall);
+</script>
+</body>
+</html>

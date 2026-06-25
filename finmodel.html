@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Артиллект · Интерактивная финмодель</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0C141D;--surf:#13202C;--surf2:#1A2937;--line:#27394B;--line2:#324a60;--txt:#E9F0F6;--mut:#8AA0B4;--mut2:#5f7588;--money:#E7B45A;--b2c:#6FB1E0;--pos:#5FCB9B;--neg:#EC8569}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1100px 600px at 12% -5%,rgba(231,180,90,.07),transparent 60%),radial-gradient(900px 500px at 100% 0%,rgba(111,177,224,.06),transparent 55%),var(--bg);color:var(--txt);font-family:"Golos Text",sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1280px;margin:0 auto;padding:26px 20px 80px}
+.top{border-bottom:1px solid var(--line);padding-bottom:18px}
+.wm{font-family:"Unbounded";font-weight:800;letter-spacing:.14em;font-size:12px;color:var(--money)}
+h1{font-family:"Unbounded";font-weight:600;font-size:24px;margin:6px 0 2px}
+.sub{color:var(--mut);font-size:13px}
+.mono{font-family:"JetBrains Mono",monospace;font-variant-numeric:tabular-nums}
+/* scenario */
+.bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:18px 0 14px}
+.seg{display:inline-flex;background:var(--surf);border:1px solid var(--line);border-radius:11px;padding:4px}
+.seg button{font-family:inherit;font-size:13px;color:var(--mut);background:none;border:0;padding:8px 16px;border-radius:8px;cursor:pointer;transition:.15s}
+.seg button.on{background:var(--money);color:#1a130a;font-weight:600}
+.bar .hint{font-size:12px;color:var(--mut2)}
+.reset{font-family:inherit;font-size:12px;color:var(--b2c);background:none;border:1px solid var(--line2);border-radius:8px;padding:7px 12px;cursor:pointer}
+/* kpi */
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:14px 0 20px}
+.kpi{background:linear-gradient(180deg,var(--surf),var(--surf2));border:1px solid var(--line);border-radius:13px;padding:13px}
+.kpi .lab{font-size:11px;color:var(--mut)}
+.kpi .v{font-family:"Unbounded";font-weight:600;font-size:19px;margin-top:7px}
+.kpi .v.money{color:var(--money)}.kpi .v.pos{color:var(--pos)}.kpi .v.neg{color:var(--neg)}
+/* assumptions */
+.panel{background:var(--surf);border:1px solid var(--line);border-radius:15px;padding:16px;margin-bottom:16px}
+.panel h3{margin:0 0 12px;font-size:14px;font-weight:600}
+.asm{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.asm .grp{}
+.asm .gh{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--money);margin-bottom:8px;font-weight:600}
+.fld{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:6px 0}
+.fld label{font-size:12px;color:var(--mut)}
+.fld input{width:96px;background:var(--surf2);border:1px solid var(--line2);border-radius:7px;color:var(--txt);font-family:"JetBrains Mono",monospace;font-size:12.5px;text-align:right;padding:5px 8px}
+.fld input:focus{outline:none;border-color:var(--money)}
+/* tables */
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:13px;background:var(--surf)}
+table{border-collapse:collapse;font-size:12.5px;width:100%}
+th,td{padding:7px 9px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--surf);z-index:2;border-right:1px solid var(--line2);min-width:178px}
+thead th{position:sticky;top:0;background:var(--surf2);color:var(--mut);font-weight:500;font-size:11px;z-index:3}
+thead th:first-child{z-index:4;background:var(--surf2)}
+tbody td{font-family:"JetBrains Mono",monospace;font-variant-numeric:tabular-nums}
+tbody td:first-child{font-family:"Golos Text";color:var(--mut)}
+tr.tot td{font-weight:700}tr.tot td:first-child{color:var(--txt)}
+tr.tot td{background:rgba(255,255,255,.025)}
+tr.sec td{color:var(--mut2);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;background:var(--surf2);border-bottom-color:var(--line2)}
+.totcol{border-left:1px solid var(--line2);background:rgba(231,180,90,.06)!important;font-weight:700}
+.pos{color:var(--pos)}.neg{color:var(--neg)}.muted{color:var(--mut2);font-style:italic}
+.note{font-size:11.5px;color:var(--mut2);line-height:1.6;margin-top:14px}
+h2{font-family:"Golos Text";font-size:15px;font-weight:600;margin:24px 0 10px}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.asm{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <span class="wm">АРТИЛЛЕКТ</span>
+    <h1>Интерактивная финмодель · P&L</h1>
+    <span class="sub">На фактической юнит-экономике (CAC 527 ₽, churn ~50%, ARPU ~1 900 ₽, LTV 2 648/499 ₽). Меняйте сценарий или любое допущение — таблицы пересчитываются мгновенно.</span>
+  </div>
+
+  <div class="bar">
+    <div class="seg" id="seg">
+      <button data-s="cons">Консервативный</button>
+      <button data-s="base" class="on">Базовый</button>
+      <button data-s="aggr">Агрессивный</button>
+    </div>
+    <button class="reset" id="reset">↺ сбросить к сценарию</button>
+    <span class="hint" id="custom"></span>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="panel">
+    <h3>Допущения <span style="font-weight:400;color:var(--mut2);font-size:12px">— редактируемые, синие в Excel</span></h3>
+    <div class="asm" id="asm"></div>
+  </div>
+
+  <h2>Помесячный P&amp;L · 24 месяца</h2>
+  <div class="tblwrap"><table id="tmon"></table></div>
+
+  <h2>Годовой P&amp;L · 5 лет</h2>
+  <div class="tblwrap"><table id="tyear"></table></div>
+
+  <div class="note" id="caveats"></div>
+</div>
+
+<script>
+// ---------- scenario presets ----------
+const PRE={
+ cons:{cac:650,churn0:50,churnT:42,churn_m:18,arpu:1400,budget:80000,organic:12,b2b_base:150000,b2b_g:5,anchor:100000000,anchor_s:12,cogs:30,hc0:6,hc_new:5,emp:130000,opex:130000,g3:1.6,g4:1.5,g5:1.4,eb3:5,eb4:15,eb5:25},
+ base:{cac:527,churn0:50,churnT:30,churn_m:18,arpu:1700,budget:150000,organic:18,b2b_base:200000,b2b_g:8,anchor:100000000,anchor_s:9,cogs:27,hc0:6,hc_new:5,emp:130000,opex:130000,g3:2.0,g4:1.8,g5:1.6,eb3:10,eb4:22,eb5:32},
+ aggr:{cac:420,churn0:50,churnT:22,churn_m:18,arpu:2000,budget:300000,organic:30,b2b_base:300000,b2b_g:10,anchor:100000000,anchor_s:6,cogs:25,hc0:6,hc_new:5,emp:130000,opex:130000,g3:2.6,g4:2.2,g5:1.8,eb3:15,eb4:28,eb5:38}
+};
+const SPEC=[
+ {g:'B2C · юнит-экономика',items:[
+   ['cac','CAC платящего, ₽',1],['arpu','ARPU, ₽/мес',10],['churn0','Churn старт, %',1],['churnT','Churn цель, %',1],
+   ['churn_m','Мес до цели',1],['budget','Маркетинг, ₽/мес',10000],['organic','Органика, нов./мес',1]]},
+ {g:'B2B',items:[
+   ['b2b_base','B2B базовая, ₽/мес',10000],['b2b_g','Рост B2B, %/мес',1],['anchor','Якорный контракт, ₽',1000000],['anchor_s','Старт контракта, мес',1]]},
+ {g:'Расходы',items:[
+   ['cogs','COGS, % выручки',1],['hc0','Текущий штат',1],['hc_new','Новый найм',1],['emp','Стоим. сотрудника, ₽',5000],['opex','Прочие OpEx, ₽/мес',10000]]},
+ {g:'Годовые (Год 3–5)',items:[
+   ['g3','Рост Год3, ×',0.1],['g4','Рост Год4, ×',0.1],['g5','Рост Год5, ×',0.1],
+   ['eb3','EBITDA Год3, %',1],['eb4','EBITDA Год4, %',1],['eb5','EBITDA Год5, %',1]]}
+];
+const PCTKEYS=new Set(['churn0','churnT','b2b_g','cogs','eb3','eb4','eb5']);
+const CASH0=50e6;
+
+// ---------- formatting ----------
+const nf=new Intl.NumberFormat('ru-RU',{maximumFractionDigits:0});
+const full=v=>nf.format(Math.round(v))+' ₽';
+function C(v){const a=Math.abs(v);const s=v<0?'−':'';
+  if(a>=1e6) return s+(a/1e6).toFixed(2).replace('.',',')+' млн';
+  if(a>=1e3) return s+Math.round(a/1e3)+'к';
+  if(a===0) return '—';
+  return s+nf.format(Math.round(a));}
+const pct=v=>(v*100).toFixed(0)+'%';
+
+// ---------- model ----------
+function compute(a){
+  const P=k=>a[k]/100, N=24;
+  const churn0=P('churn0'),churnT=P('churnT'),cm=a.churn_m;
+  const churn=[],paying=[],b2c=[];
+  for(let t=1;t<=N;t++){
+    const ch=Math.max(churnT,churn0-(churn0-churnT)*(t-1)/(cm-1)); churn.push(ch);
+    const newTot=a.budget/a.cac+a.organic;
+    const prev=t===1?56:paying[t-2];
+    const p=prev*(1-ch)+newTot; paying.push(p); b2c.push(p*a.arpu);
+  }
+  const b2bBase=[],anchor=[],rev=[],arr=[],cogs=[],gross=[],hc=[],fot=[],mkt=[],opx=[],ebit=[],net=[],cash=[];
+  const pm=a.anchor/24;
+  for(let t=1;t<=N;t++){const i=t-1;
+    b2bBase.push(a.b2b_base*Math.pow(1+P('b2b_g'),t-1));
+    anchor.push((t>=a.anchor_s&&t<a.anchor_s+24)?pm:0);
+    const r=b2c[i]+b2bBase[i]+anchor[i]; rev.push(r); arr.push(r*12);
+    const cg=r*P('cogs'); cogs.push(cg); gross.push(r-cg);
+    const h=a.hc0+Math.round(a.hc_new*Math.min(t,4)/4); hc.push(h);
+    fot.push(h*a.emp); mkt.push(a.budget); opx.push(a.opex*Math.pow(1.02,t-1));
+    const eb=(r-cg)-fot[i]-mkt[i]-opx[i]; ebit.push(eb); net.push(eb);
+    cash.push((i===0?CASH0:cash[i-1])+net[i]);
+  }
+  const sum=(ar,x,y)=>ar.slice(x,y).reduce((p,c)=>p+c,0);
+  const yRev=[sum(rev,0,12),sum(rev,12,24),0,0,0];
+  yRev[2]=yRev[1]*a.g3; yRev[3]=yRev[2]*a.g4; yRev[4]=yRev[3]*a.g5;
+  const yEb=[sum(ebit,0,12),sum(ebit,12,24),yRev[2]*P('eb3'),yRev[3]*P('eb4'),yRev[4]*P('eb5')];
+  const be=ebit.findIndex(x=>x>0);
+  return {N,churn,paying,b2c,b2bBase,anchor,rev,arr,cogs,gross,hc,fot,mkt,opx,ebit,net,cash,yRev,yEb,
+    kpi:{arr18:arr[17],be:be>=0?be+1:null,y5:yRev[4],minCash:Math.min(...cash),pay24:paying[23],ltvcac:(a.arpu/P('churnT'))/a.cac}};
+}
+
+// ---------- read assumptions ----------
+function readA(){const a={};document.querySelectorAll('#asm input').forEach(i=>a[i.dataset.k]=parseFloat(i.value)||0);return a;}
+
+// ---------- render assumptions form ----------
+function buildForm(){
+  let h='';
+  for(const grp of SPEC){h+=`<div class="grp"><div class="gh">${grp.g}</div>`;
+    for(const [k,lab,step] of grp.items){h+=`<div class="fld"><label>${lab}</label><input type="number" step="${step}" data-k="${k}" id="in_${k}"></div>`;}
+    h+='</div>';}
+  document.getElementById('asm').innerHTML=h;
+}
+function setInputs(p){for(const k in p){const el=document.getElementById('in_'+k); if(el) el.value=p[k];}}
+
+// ---------- render KPIs ----------
+function renderKPI(m){
+  const k=m.kpi;
+  const cells=[
+   ['ARR на 18-й мес',C(k.arr18),'money'],
+   ['Точка безубыточности',k.be?('М'+k.be):'—', k.be?'pos':'neg'],
+   ['Выручка Год 5',C(k.y5),'money'],
+   ['Мин. кэш за 24 мес',C(k.minCash), k.minCash>0?'pos':'neg'],
+   ['Платящих к М24',nf.format(Math.round(k.pay24)),''],
+   ['LTV/CAC модельный',k.ltvcac.toFixed(1)+'x','']
+  ];
+  document.getElementById('kpis').innerHTML=cells.map(c=>`<div class="kpi"><div class="lab">${c[0]}</div><div class="v ${c[2]}">${c[1]}</div></div>`).join('');
+}
+
+// ---------- render monthly ----------
+function renderMonthly(m){
+  const ML=[...Array(24)].map((_,i)=>'М'+(i+1));
+  const rows=[
+   ['sec','Выручка'],
+   ['Выручка B2C',m.b2c,'sum'],
+   ['B2B базовая',m.b2bBase,'sum'],
+   ['B2B якорный',m.anchor,'sum'],
+   ['ИТОГО ВЫРУЧКА',m.rev,'sum','tot'],
+   ['ARR (run-rate)',m.arr,'last','muted'],
+   ['sec','Себестоимость и валовая'],
+   ['COGS',m.cogs.map(x=>-x),'sum'],
+   ['Валовая прибыль',m.gross,'sum','tot'],
+   ['sec','Расходы'],
+   ['Платящих, чел',m.paying,'last','muted'],
+   ['Churn, %/мес',m.churn,'pct','muted'],
+   ['Штат, чел',m.hc,'last','muted'],
+   ['ФОТ',m.fot.map(x=>-x),'sum'],
+   ['Маркетинг',m.mkt.map(x=>-x),'sum'],
+   ['Прочие OpEx',m.opx.map(x=>-x),'sum'],
+   ['EBITDA',m.ebit,'sum','tot ebit'],
+   ['Чистая прибыль',m.net,'sum','tot'],
+   ['Кэш на конец',m.cash,'last','tot']
+  ];
+  let h='<thead><tr><th>Статья, ₽</th>'+ML.map(x=>`<th>${x}</th>`).join('')+'<th class="totcol">Итого</th></tr></thead><tbody>';
+  for(const r of rows){
+    if(r[0]==='sec'){h+=`<tr class="sec"><td colspan="26">${r[1]}</td></tr>`;continue;}
+    const [lab,arr,mode,cls='']=r;
+    const ebit=cls.includes('ebit');
+    const fmt=(v)=> mode==='pct'? pct(v) : (mode==='last'&&(lab.includes('чел')||lab.includes('Платящих'))? nf.format(Math.round(v)) : C(v));
+    const col=v=> ebit||lab==='Чистая прибыль'? (v>=0?'pos':'neg'):'';
+    let cells='';
+    for(let i=0;i<24;i++){cells+=`<td class="${col(arr[i])}">${fmt(arr[i])}</td>`;}
+    let tot;
+    if(mode==='sum'){const s=arr.reduce((p,c)=>p+c,0); tot=`<td class="totcol ${col(s)}">${C(s)}</td>`;}
+    else if(mode==='last'){const v=arr[23]; tot=`<td class="totcol">${(lab.includes('чел')||lab.includes('Платящих'))?nf.format(Math.round(v)):C(v)}</td>`;}
+    else {tot='<td class="totcol">—</td>';}
+    h+=`<tr class="${cls}"><td>${lab}</td>${cells}${tot}</tr>`;
+  }
+  document.getElementById('tmon').innerHTML=h+'</tbody>';
+}
+
+// ---------- render annual ----------
+function renderYear(m){
+  const yr=['Год 1','Год 2','Год 3','Год 4','Год 5'];
+  const growth=m.yRev.map((v,i)=> i===0?null:v/m.yRev[i-1]-1);
+  const ebm=m.yEb.map((v,i)=>v/m.yRev[i]);
+  const rows=[
+   ['ВЫРУЧКА',m.yRev,'rub','tot'],
+   ['Рост, % г/г',growth,'g','muted'],
+   ['EBITDA',m.yEb,'rub','tot ebit'],
+   ['EBITDA маржа',ebm,'p','muted'],
+   ['ARR на конец года',m.yRev,'rub','muted']
+  ];
+  let h='<thead><tr><th>Показатель, ₽</th>'+yr.map(x=>`<th>${x}</th>`).join('')+'</tr></thead><tbody>';
+  for(const [lab,arr,t,cls=''] of rows){
+    const ebit=cls.includes('ebit');
+    let cells='';
+    for(let i=0;i<5;i++){let v=arr[i],s;
+      if(t==='g') s=(v==null?'—':(v>=0?'+':'−')+Math.abs(v*100).toFixed(0)+'%');
+      else if(t==='p') s=(v*100).toFixed(0)+'%';
+      else s=C(v);
+      const c= ebit?(v>=0?'pos':'neg'):'';
+      cells+=`<td class="${c}">${s}</td>`;}
+    h+=`<tr class="${cls}"><td>${lab}</td>${cells}</tr>`;
+  }
+  document.getElementById('tyear').innerHTML=h+'</tbody>';
+}
+
+function render(){const m=compute(readA());renderKPI(m);renderMonthly(m);renderYear(m);}
+
+// ---------- events ----------
+let curScen='base';
+function applyScenario(s){curScen=s;setInputs(PRE[s]);
+  document.querySelectorAll('#seg button').forEach(b=>b.classList.toggle('on',b.dataset.s===s));
+  document.getElementById('custom').textContent=''; render();}
+document.getElementById('seg').addEventListener('click',e=>{const b=e.target.closest('button');if(b)applyScenario(b.dataset.s);});
+document.getElementById('reset').addEventListener('click',()=>applyScenario(curScen));
+document.getElementById('asm').addEventListener('input',()=>{document.getElementById('custom').textContent='● изменено вручную (отклонение от сценария)';render();});
+
+document.getElementById('caveats').innerHTML='Допущения, о которых важно помнить: ARPU 1 700 ₽ — средний, вытянут «китами» (топ-10% = 70% выручки), новые пользователи ближе к медиане ~500 ₽. CAC 527 ₽ — без стоимости инфлюенсеров (нижняя оценка). Линейное масштабирование платного трафика при постоянном CAC оптимистично — обычно CAC растёт с объёмом. Налог на прибыль 0% (Сколково). Стартовый кэш = раунд 50 млн ₽.';
+
+buildForm(); applyScenario('base');
+</script>
+</body>
+</html>
