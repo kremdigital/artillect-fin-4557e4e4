@@ -57,6 +57,33 @@ tr.sec td{color:var(--mut2);font-size:10.5px;text-transform:uppercase;letter-spa
 .note{font-size:11.5px;color:var(--mut2);line-height:1.6;margin-top:14px}
 h2{font-family:"Golos Text";font-size:15px;font-weight:600;margin:24px 0 10px}
 @media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.asm{grid-template-columns:1fr 1fr}}
+/* touch-friendly horizontal scroll for wide tables */
+.tblwrap{-webkit-overflow-scrolling:touch}
+.tblwrap::-webkit-scrollbar{height:9px}
+.tblwrap::-webkit-scrollbar-thumb{background:var(--line2);border-radius:6px}
+.tblwrap::-webkit-scrollbar-track{background:transparent}
+@media(max-width:560px){
+  .wrap{padding:18px 13px 64px}
+  h1{font-size:20px;line-height:1.15}
+  .sub{font-size:12px}
+  .bar{gap:10px;margin:14px 0 12px}
+  .seg{width:100%;justify-content:center}
+  .seg button{flex:1;padding:9px 6px;font-size:12.5px}
+  .reset{flex:1;text-align:center}
+  .kpis{grid-template-columns:repeat(2,1fr);gap:8px}
+  .kpi{padding:11px}
+  .kpi .v{font-size:16px}
+  .panel{padding:14px}
+  .asm{grid-template-columns:1fr;gap:16px}
+  .fld{flex-direction:column;align-items:stretch;gap:5px;margin:10px 0}
+  .fld label{font-size:12.5px}
+  .fld input{width:100%;font-size:16px;text-align:left;padding:10px 11px}
+  h2{font-size:14px;margin:20px 0 9px}
+  table{font-size:12px}
+  th,td{padding:6px 7px}
+  th:first-child,td:first-child{min-width:126px}
+  .note{font-size:11px}
+}
 </style>
 </head>
 <body>

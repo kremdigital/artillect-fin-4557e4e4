@@ -89,7 +89,36 @@ tr.ebitda td:first-child,tr.net td:first-child,tr.gross td:first-child{color:var
 .pos{color:var(--pos)}.neg{color:var(--neg)}
 .foot{margin-top:26px;color:var(--mut2);font-size:11.5px;line-height:1.6}
 @media(max-width:900px){.hero{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}.wf{grid-column:1/-1}
- .tblwrap{overflow-x:auto}}
+ .tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}}
+.tblwrap::-webkit-scrollbar{height:9px}
+.tblwrap::-webkit-scrollbar-thumb{background:var(--line2);border-radius:6px}
+.tblwrap::-webkit-scrollbar-track{background:transparent}
+@media(max-width:560px){
+  .wrap{padding:18px 13px 64px}
+  .title{font-size:21px;line-height:1.1}
+  .sub{font-size:12.5px}
+  .top{gap:12px;padding-bottom:16px}
+  .badges{gap:6px}
+  .badge{font-size:11px;padding:5px 9px}
+  .hero{grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+  .card{padding:14px;border-radius:14px}
+  .kpi .val{font-size:19px}
+  .kpi .lab{font-size:11px}
+  .kpi .note{font-size:11px}
+  .flags{font-size:12.5px;padding:12px 13px;margin-bottom:18px}
+  .bar{gap:10px}
+  .seg{flex:1}
+  .seg button{flex:1;font-size:11.5px;padding:8px 6px}
+  .panel{padding:14px 14px 8px}
+  .cv{height:220px}
+  .ue-grid{gap:8px}
+  .ue{padding:10px}
+  .ue .v{font-size:16px}
+  table{font-size:12px}
+  th,td{padding:6px 7px}
+  #pl thead th:first-child,#pl tbody td:first-child{position:sticky;left:0;z-index:2;background:var(--surf);box-shadow:1px 0 0 var(--line2)}
+  .foot{font-size:11px}
+}
 </style>
 </head>
 <body>
