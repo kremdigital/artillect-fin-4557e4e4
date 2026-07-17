@@ -123,16 +123,16 @@ h2{font-family:"Golos Text";font-size:15px;font-weight:600;margin:24px 0 10px}
 <script>
 // ---------- scenario presets ----------
 const PRE={
- cons:{cac:650,churn0:50,churnT:42,churn_m:18,arpu:1400,budget:80000,organic:12,b2b_base:150000,b2b_g:5,anchor:100000000,anchor_s:12,cogs:30,hc0:6,hc_new:5,emp:130000,opex:130000,g3:1.6,g4:1.5,g5:1.4,eb3:5,eb4:15,eb5:25},
- base:{cac:527,churn0:50,churnT:30,churn_m:18,arpu:1700,budget:150000,organic:18,b2b_base:200000,b2b_g:8,anchor:100000000,anchor_s:9,cogs:27,hc0:6,hc_new:5,emp:130000,opex:130000,g3:2.0,g4:1.8,g5:1.6,eb3:10,eb4:22,eb5:32},
- aggr:{cac:420,churn0:50,churnT:22,churn_m:18,arpu:2000,budget:300000,organic:30,b2b_base:300000,b2b_g:10,anchor:100000000,anchor_s:6,cogs:25,hc0:6,hc_new:5,emp:130000,opex:130000,g3:2.6,g4:2.2,g5:1.8,eb3:15,eb4:28,eb5:38}
+ cons:{cac:650,churn0:50,churnT:42,churn_m:18,arpu:1400,budget:80000,organic:12,b2b_base:150000,b2b_g:5,cogs:30,hc0:6,hc_new:5,emp:130000,opex:130000,g3:1.6,g4:1.5,g5:1.4,eb3:5,eb4:15,eb5:25},
+ base:{cac:527,churn0:50,churnT:30,churn_m:18,arpu:1700,budget:150000,organic:18,b2b_base:200000,b2b_g:8,cogs:27,hc0:6,hc_new:5,emp:130000,opex:130000,g3:2.0,g4:1.8,g5:1.6,eb3:10,eb4:22,eb5:32},
+ aggr:{cac:420,churn0:50,churnT:22,churn_m:18,arpu:2000,budget:300000,organic:30,b2b_base:300000,b2b_g:10,cogs:25,hc0:6,hc_new:5,emp:130000,opex:130000,g3:2.6,g4:2.2,g5:1.8,eb3:15,eb4:28,eb5:38}
 };
 const SPEC=[
  {g:'B2C · юнит-экономика',items:[
    ['cac','CAC платящего, ₽',1],['arpu','ARPU, ₽/мес',10],['churn0','Churn старт, %',1],['churnT','Churn цель, %',1],
    ['churn_m','Мес до цели',1],['budget','Маркетинг, ₽/мес',10000],['organic','Органика, нов./мес',1]]},
  {g:'B2B',items:[
-   ['b2b_base','B2B базовая, ₽/мес',10000],['b2b_g','Рост B2B, %/мес',1],['anchor','Якорный контракт, ₽',1000000],['anchor_s','Старт контракта, мес',1]]},
+   ['b2b_base','B2B базовая, ₽/мес',10000],['b2b_g','Рост B2B, %/мес',1]]},
  {g:'Расходы',items:[
    ['cogs','COGS, % выручки',1],['hc0','Текущий штат',1],['hc_new','Новый найм',1],['emp','Стоим. сотрудника, ₽',5000],['opex','Прочие OpEx, ₽/мес',10000]]},
  {g:'Годовые (Год 3–5)',items:[
@@ -163,12 +163,10 @@ function compute(a){
     const prev=t===1?56:paying[t-2];
     const p=prev*(1-ch)+newTot; paying.push(p); b2c.push(p*a.arpu);
   }
-  const b2bBase=[],anchor=[],rev=[],arr=[],cogs=[],gross=[],hc=[],fot=[],mkt=[],opx=[],ebit=[],net=[],cash=[];
-  const pm=a.anchor/24;
+  const b2bBase=[],rev=[],arr=[],cogs=[],gross=[],hc=[],fot=[],mkt=[],opx=[],ebit=[],net=[],cash=[];
   for(let t=1;t<=N;t++){const i=t-1;
     b2bBase.push(a.b2b_base*Math.pow(1+P('b2b_g'),t-1));
-    anchor.push((t>=a.anchor_s&&t<a.anchor_s+24)?pm:0);
-    const r=b2c[i]+b2bBase[i]+anchor[i]; rev.push(r); arr.push(r*12);
+    const r=b2c[i]+b2bBase[i]; rev.push(r); arr.push(r*12);
     const cg=r*P('cogs'); cogs.push(cg); gross.push(r-cg);
     const h=a.hc0+Math.round(a.hc_new*Math.min(t,4)/4); hc.push(h);
     fot.push(h*a.emp); mkt.push(a.budget); opx.push(a.opex*Math.pow(1.02,t-1));
@@ -180,7 +178,7 @@ function compute(a){
   yRev[2]=yRev[1]*a.g3; yRev[3]=yRev[2]*a.g4; yRev[4]=yRev[3]*a.g5;
   const yEb=[sum(ebit,0,12),sum(ebit,12,24),yRev[2]*P('eb3'),yRev[3]*P('eb4'),yRev[4]*P('eb5')];
   const be=ebit.findIndex(x=>x>0);
-  return {N,churn,paying,b2c,b2bBase,anchor,rev,arr,cogs,gross,hc,fot,mkt,opx,ebit,net,cash,yRev,yEb,
+  return {N,churn,paying,b2c,b2bBase,rev,arr,cogs,gross,hc,fot,mkt,opx,ebit,net,cash,yRev,yEb,
     kpi:{arr18:arr[17],be:be>=0?be+1:null,y5:yRev[4],minCash:Math.min(...cash),pay24:paying[23],ltvcac:(a.arpu/P('churnT'))/a.cac}};
 }
 
@@ -218,7 +216,6 @@ function renderMonthly(m){
    ['sec','Выручка'],
    ['Выручка B2C',m.b2c,'sum'],
    ['B2B базовая',m.b2bBase,'sum'],
-   ['B2B якорный',m.anchor,'sum'],
    ['ИТОГО ВЫРУЧКА',m.rev,'sum','tot'],
    ['ARR (run-rate)',m.arr,'last','muted'],
    ['sec','Себестоимость и валовая'],
