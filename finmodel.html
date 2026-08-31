@@ -25,7 +25,7 @@ h1{font-family:"Unbounded";font-weight:600;font-size:24px;margin:6px 0 2px}
 .bar .hint{font-size:12px;color:var(--mut2)}
 .reset{font-family:inherit;font-size:12px;color:var(--b2c);background:none;border:1px solid var(--line2);border-radius:8px;padding:7px 12px;cursor:pointer}
 /* kpi */
-.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:14px 0 20px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0 20px}
 .kpi{background:linear-gradient(180deg,var(--surf),var(--surf2));border:1px solid var(--line);border-radius:13px;padding:13px}
 .kpi .lab{font-size:11px;color:var(--mut)}
 .kpi .v{font-family:"Unbounded";font-weight:600;font-size:19px;margin-top:7px}
@@ -33,7 +33,7 @@ h1{font-family:"Unbounded";font-weight:600;font-size:24px;margin:6px 0 2px}
 /* assumptions */
 .panel{background:var(--surf);border:1px solid var(--line);border-radius:15px;padding:16px;margin-bottom:16px}
 .panel h3{margin:0 0 12px;font-size:14px;font-weight:600}
-.asm{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.asm{display:grid;grid-template-columns:repeat(5,1fr);gap:18px}
 .asm .grp{}
 .asm .gh{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--money);margin-bottom:8px;font-weight:600}
 .fld{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:6px 0}
@@ -91,7 +91,7 @@ h2{font-family:"Golos Text";font-size:15px;font-weight:600;margin:24px 0 10px}
   <div class="top">
     <span class="wm">АРТИЛЛЕКТ</span>
     <h1>Интерактивная финмодель · P&L</h1>
-    <span class="sub">На фактической юнит-экономике (CAC 527 ₽, churn ~50%, ARPU ~1 900 ₽, LTV 2 648/499 ₽). Меняйте сценарий или любое допущение — таблицы пересчитываются мгновенно.</span>
+    <span class="sub">Инвестиции 20 млн ₽ · фактическая юнит-экономика (CAC 527 ₽, churn ~50%, ARPU ~1 700 ₽, LTV 2 648/499 ₽). Умеренный рост выручки и прибыли стартует только после накопления финансового запаса ≥ 2 ФОТ. Меняйте сценарий или допущение — таблицы пересчитываются мгновенно.</span>
   </div>
 
   <div class="bar">
@@ -123,9 +123,9 @@ h2{font-family:"Golos Text";font-size:15px;font-weight:600;margin:24px 0 10px}
 <script>
 // ---------- scenario presets ----------
 const PRE={
- cons:{cac:650,churn0:50,churnT:42,churn_m:18,arpu:1400,budget:80000,organic:12,b2b_base:150000,b2b_g:5,cogs:30,hc0:6,hc_new:5,emp:130000,opex:130000,g3:1.6,g4:1.5,g5:1.4,eb3:5,eb4:15,eb5:25},
- base:{cac:527,churn0:50,churnT:30,churn_m:18,arpu:1700,budget:150000,organic:18,b2b_base:200000,b2b_g:8,cogs:27,hc0:6,hc_new:5,emp:130000,opex:130000,g3:2.0,g4:1.8,g5:1.6,eb3:10,eb4:22,eb5:32},
- aggr:{cac:420,churn0:50,churnT:22,churn_m:18,arpu:2000,budget:300000,organic:30,b2b_base:300000,b2b_g:10,cogs:25,hc0:6,hc_new:5,emp:130000,opex:130000,g3:2.6,g4:2.2,g5:1.8,eb3:15,eb4:28,eb5:38}
+ cons:{cac:650,churn0:50,churnT:42,churn_m:18,arpu:1400,budget:80000,organic:12,b2b_base:150000,b2b_g:5,cogs:30,hc0:6,hc_new:5,emp:130000,opex:130000,g3:1.6,g4:1.5,g5:1.4,eb3:5,eb4:15,eb5:25,reserve:2,mkt_r:0.85,b2b_r:1},
+ base:{cac:527,churn0:50,churnT:30,churn_m:18,arpu:1700,budget:150000,organic:18,b2b_base:200000,b2b_g:8,cogs:27,hc0:6,hc_new:5,emp:130000,opex:130000,g3:2.0,g4:1.8,g5:1.6,eb3:10,eb4:22,eb5:32,reserve:2,mkt_r:0.85,b2b_r:1},
+ aggr:{cac:420,churn0:50,churnT:22,churn_m:18,arpu:2000,budget:300000,organic:30,b2b_base:300000,b2b_g:10,cogs:25,hc0:6,hc_new:5,emp:130000,opex:130000,g3:2.6,g4:2.2,g5:1.8,eb3:15,eb4:28,eb5:38,reserve:2,mkt_r:0.85,b2b_r:1}
 };
 const SPEC=[
  {g:'B2C · юнит-экономика',items:[
@@ -135,12 +135,14 @@ const SPEC=[
    ['b2b_base','B2B базовая, ₽/мес',10000],['b2b_g','Рост B2B, %/мес',1]]},
  {g:'Расходы',items:[
    ['cogs','COGS, % выручки',1],['hc0','Текущий штат',1],['hc_new','Новый найм',1],['emp','Стоим. сотрудника, ₽',5000],['opex','Прочие OpEx, ₽/мес',10000]]},
+ {g:'Подушка и рост',items:[
+   ['reserve','Целевой запас, ×ФОТ',0.1],['mkt_r','Маркетинг (фаза 1), ×',0.05],['b2b_r','Рост B2B (фаза 1), ×',0.05]]},
  {g:'Годовые (Год 3–5)',items:[
    ['g3','Рост Год3, ×',0.1],['g4','Рост Год4, ×',0.1],['g5','Рост Год5, ×',0.1],
    ['eb3','EBITDA Год3, %',1],['eb4','EBITDA Год4, %',1],['eb5','EBITDA Год5, %',1]]}
 ];
 const PCTKEYS=new Set(['churn0','churnT','b2b_g','cogs','eb3','eb4','eb5']);
-const CASH0=50e6;
+const CASH0=20e6;
 
 // ---------- formatting ----------
 const nf=new Intl.NumberFormat('ru-RU',{maximumFractionDigits:0});
@@ -155,31 +157,55 @@ const pct=v=>(v*100).toFixed(0)+'%';
 // ---------- model ----------
 function compute(a){
   const P=k=>a[k]/100, N=24;
-  const churn0=P('churn0'),churnT=P('churnT'),cm=a.churn_m;
-  const churn=[],paying=[],b2c=[];
+  const resT=a.reserve>0?a.reserve:2;            // целевой запас, ×ФОТ (подушка безопасности)
+  const mktR=a.mkt_r>0?a.mkt_r:0.85;            // маркетинг в фазе накопления
+  const b2bR=a.b2b_r>0?a.b2b_r:1;               // рост B2B в фазе накопления
+  const churn=[],paying=[],b2c=[],b2bBase=[],rev=[],arr=[],cogs=[],gross=[],hc=[],fot=[],mkt=[],opx=[],ebit=[],net=[],cash=[],reserve=[],phase=[];
+  let ph=1, switchM=null, prevMkt=a.budget*mktR;
   for(let t=1;t<=N;t++){
-    const ch=Math.max(churnT,churn0-(churn0-churnT)*(t-1)/(cm-1)); churn.push(ch);
-    const newTot=a.budget/a.cac+a.organic;
+    const ch=Math.max(P('churnT'),P('churn0')-(P('churn0')-P('churnT'))*(t-1)/(a.churn_m-1)); churn.push(ch);
+    // приобретение: траты прошлого месяца / CAC (лаг 1 мес) + органика
+    const newTot=prevMkt/a.cac+a.organic;
     const prev=t===1?56:paying[t-2];
     const p=prev*(1-ch)+newTot; paying.push(p); b2c.push(p*a.arpu);
-  }
-  const b2bBase=[],rev=[],arr=[],cogs=[],gross=[],hc=[],fot=[],mkt=[],opx=[],ebit=[],net=[],cash=[];
-  for(let t=1;t<=N;t++){const i=t-1;
-    b2bBase.push(a.b2b_base*Math.pow(1+P('b2b_g'),t-1));
-    const r=b2c[i]+b2bBase[i]; rev.push(r); arr.push(r*12);
+    const bb=t===1?a.b2b_base:b2bBase[t-2]*(1+P('b2b_g')*(ph===1?b2bR:1)); b2bBase.push(bb);
+    const r=b2c[t-1]+bb; rev.push(r); arr.push(r*12);
     const cg=r*P('cogs'); cogs.push(cg); gross.push(r-cg);
-    const h=a.hc0+Math.round(a.hc_new*Math.min(t,4)/4); hc.push(h);
-    fot.push(h*a.emp); mkt.push(a.budget); opx.push(a.opex*Math.pow(1.02,t-1));
-    const eb=(r-cg)-fot[i]-mkt[i]-opx[i]; ebit.push(eb); net.push(eb);
-    cash.push((i===0?CASH0:cash[i-1])+net[i]);
+    const opxv=a.opex*Math.pow(1.02,t-1); opx.push(opxv);
+    const prevCash=t===1?CASH0:cash[t-2];
+    // найм: в фазе накопления заморожен; в фазе роста — ввод за 4 месяца,
+    // но не быстрее, чем позволяет прибыль (EBITDA не уходит в минус)
+    let h=ph===1?a.hc0:a.hc0+Math.round(a.hc_new*Math.min(t-(switchM||1)+1,4)/4);
+    let fotv=h*a.emp;
+    // защита подушки: маркетинг ограничен, чтобы запас не опускался ниже цели
+    let mktv=a.budget*(ph===1?mktR:1);
+    const maxMkt=Math.max(0,prevCash+r-cg-fotv-opxv-resT*fotv);
+    if(mktv>maxMkt)mktv=maxMkt;
+    if(ph===2){
+      const afford=Math.floor((r-cg-mktv-opxv)/a.emp);
+      h=Math.min(h,Math.max(a.hc0,afford));
+      fotv=h*a.emp;
+    }
+    mkt.push(mktv); prevMkt=mktv;
+    hc.push(h); fot.push(fotv);
+    const eb=r-cg-fotv-mktv-opxv; ebit.push(eb); net.push(eb);
+    const cv=prevCash+eb; cash.push(cv); reserve.push(cv/fotv); phase.push(ph);
+    // переход к умеренному росту: прибыль устойчива (тек. месяц и сумма за 3 мес положительны) и запас >= цели
+    const trail3=eb+(t>=2?ebit[t-2]:0)+(t>=3?ebit[t-3]:0);
+    if(ph===1&&eb>0&&trail3>=0&&cv/fotv>=resT){ph=2;switchM=t;}
   }
   const sum=(ar,x,y)=>ar.slice(x,y).reduce((p,c)=>p+c,0);
   const yRev=[sum(rev,0,12),sum(rev,12,24),0,0,0];
   yRev[2]=yRev[1]*a.g3; yRev[3]=yRev[2]*a.g4; yRev[4]=yRev[3]*a.g5;
   const yEb=[sum(ebit,0,12),sum(ebit,12,24),yRev[2]*P('eb3'),yRev[3]*P('eb4'),yRev[4]*P('eb5')];
+  // годовой запас: кэш на конец года / месячный ФОТ (Годы 3–5: ФОТ +10%/год)
+  const yCash=[cash[11],cash[23],cash[23]+yEb[2],cash[23]+yEb[2]+yEb[3],cash[23]+yEb[2]+yEb[3]+yEb[4]];
+  const yFot=[fot[11],fot[23],fot[23]*1.1,fot[23]*1.21,fot[23]*1.331];
+  const yRes=yCash.map((c,i)=>c/yFot[i]);
   const be=ebit.findIndex(x=>x>0);
-  return {N,churn,paying,b2c,b2bBase,rev,arr,cogs,gross,hc,fot,mkt,opx,ebit,net,cash,yRev,yEb,
-    kpi:{arr18:arr[17],be:be>=0?be+1:null,y5:yRev[4],minCash:Math.min(...cash),pay24:paying[23],ltvcac:(a.arpu/P('churnT'))/a.cac}};
+  return {N,churn,paying,b2c,b2bBase,rev,arr,cogs,gross,hc,fot,mkt,opx,ebit,net,cash,reserve,phase,yRev,yEb,yRes,
+    resT,switchM,
+    kpi:{arr18:arr[17],be:be>=0?be+1:null,y5:yRev[4],minCash:Math.min(...cash),pay24:paying[23],ltvcac:(a.arpu/P('churnT'))/a.cac,switchM,minRes:Math.min(...reserve),resT}};
 }
 
 // ---------- read assumptions ----------
@@ -201,6 +227,8 @@ function renderKPI(m){
   const cells=[
    ['ARR на 18-й мес',C(k.arr18),'money'],
    ['Точка безубыточности',k.be?('М'+k.be):'—', k.be?'pos':'neg'],
+   ['Старт умеренного роста',k.switchM?('М'+k.switchM):'—', k.switchM?'pos':'neg'],
+   ['Мин. запас (цель ≥ 2 ФОТ)',(k.minRes.toFixed(1)).replace('.',',')+'×', k.minRes>=k.resT?'pos':'neg'],
    ['Выручка Год 5',C(k.y5),'money'],
    ['Мин. кэш за 24 мес',C(k.minCash), k.minCash>0?'pos':'neg'],
    ['Платящих к М24',nf.format(Math.round(k.pay24)),''],
@@ -230,7 +258,10 @@ function renderMonthly(m){
    ['Прочие OpEx',m.opx.map(x=>-x),'sum'],
    ['EBITDA',m.ebit,'sum','tot ebit'],
    ['Чистая прибыль',m.net,'sum','tot'],
-   ['Кэш на конец',m.cash,'last','tot']
+   ['Кэш на конец',m.cash,'last','tot'],
+   ['sec','Подушка безопасности и фазы'],
+   ['Запас, ×ФОТ',m.reserve,'res','muted'],
+   ['Фаза',m.phase,'phase','muted']
   ];
   let h='<thead><tr><th>Статья, ₽</th>'+ML.map(x=>`<th>${x}</th>`).join('')+'<th class="totcol">Итого</th></tr></thead><tbody>';
   for(const r of rows){
@@ -240,10 +271,16 @@ function renderMonthly(m){
     const fmt=(v)=> mode==='pct'? pct(v) : (mode==='last'&&(lab.includes('чел')||lab.includes('Платящих'))? nf.format(Math.round(v)) : C(v));
     const col=v=> ebit||lab==='Чистая прибыль'? (v>=0?'pos':'neg'):'';
     let cells='';
-    for(let i=0;i<24;i++){cells+=`<td class="${col(arr[i])}">${fmt(arr[i])}</td>`;}
+    for(let i=0;i<24;i++){
+      if(mode==='res'){cells+=`<td class="${arr[i]>=m.resT?'pos':'neg'}">${(arr[i].toFixed(1)).replace('.',',')}×</td>`;}
+      else if(mode==='phase'){cells+=`<td class="${arr[i]===1?'muted':'pos'}">${arr[i]===1?'Накопление':'Рост'}</td>`;}
+      else {cells+=`<td class="${col(arr[i])}">${fmt(arr[i])}</td>`;}
+    }
     let tot;
     if(mode==='sum'){const s=arr.reduce((p,c)=>p+c,0); tot=`<td class="totcol ${col(s)}">${C(s)}</td>`;}
     else if(mode==='last'){const v=arr[23]; tot=`<td class="totcol">${(lab.includes('чел')||lab.includes('Платящих'))?nf.format(Math.round(v)):C(v)}</td>`;}
+    else if(mode==='res'){const mn=Math.min(...arr); tot=`<td class="totcol ${mn>=m.resT?'pos':'neg'}">мин ${(mn.toFixed(1)).replace('.',',')}×</td>`;}
+    else if(mode==='phase'){const pv=arr[23]; tot=`<td class="totcol ${pv===1?'muted':'pos'}">${pv===1?'Накопление':'Рост'}</td>`;}
     else {tot='<td class="totcol">—</td>';}
     h+=`<tr class="${cls}"><td>${lab}</td>${cells}${tot}</tr>`;
   }
@@ -260,7 +297,7 @@ function renderYear(m){
    ['Рост, % г/г',growth,'g','muted'],
    ['EBITDA',m.yEb,'rub','tot ebit'],
    ['EBITDA маржа',ebm,'p','muted'],
-   ['ARR на конец года',m.yRev,'rub','muted']
+   ['Запас на конец года, ×ФОТ',m.yRes,'res','muted']
   ];
   let h='<thead><tr><th>Показатель, ₽</th>'+yr.map(x=>`<th>${x}</th>`).join('')+'</tr></thead><tbody>';
   for(const [lab,arr,t,cls=''] of rows){
@@ -269,8 +306,9 @@ function renderYear(m){
     for(let i=0;i<5;i++){let v=arr[i],s;
       if(t==='g') s=(v==null?'—':(v>=0?'+':'−')+Math.abs(v*100).toFixed(0)+'%');
       else if(t==='p') s=(v*100).toFixed(0)+'%';
+      else if(t==='res') s=(v.toFixed(1)).replace('.',',')+'×';
       else s=C(v);
-      const c= ebit?(v>=0?'pos':'neg'):'';
+      const c= ebit?(v>=0?'pos':'neg'):(t==='res'?(v>=m.resT?'pos':'neg'):'');
       cells+=`<td class="${c}">${s}</td>`;}
     h+=`<tr class="${cls}"><td>${lab}</td>${cells}</tr>`;
   }
@@ -288,7 +326,7 @@ document.getElementById('seg').addEventListener('click',e=>{const b=e.target.clo
 document.getElementById('reset').addEventListener('click',()=>applyScenario(curScen));
 document.getElementById('asm').addEventListener('input',()=>{document.getElementById('custom').textContent='● изменено вручную (отклонение от сценария)';render();});
 
-document.getElementById('caveats').innerHTML='Допущения, о которых важно помнить: ARPU 1 700 ₽ — средний, вытянут «китами» (топ-10% = 70% выручки), новые пользователи ближе к медиане ~500 ₽. CAC 527 ₽ — без стоимости инфлюенсеров (нижняя оценка). Линейное масштабирование платного трафика при постоянном CAC оптимистично — обычно CAC растёт с объёмом. Налог на прибыль 0% (Сколково). Стартовый кэш = раунд 50 млн ₽.';
+document.getElementById('caveats').innerHTML='Допущения, о которых важно помнить: ARPU 1 700 ₽ — средний, вытянут «китами» (топ-10% = 70% выручки), новые пользователи ближе к медиане ~500 ₽. CAC 527 ₽ — без стоимости инфлюенсеров (нижняя оценка). Линейное масштабирование платного трафика при постоянном CAC оптимистично — обычно CAC растёт с объёмом. Налог на прибыль 0% (Сколково). Инвестиции 20 млн ₽. Двухфазная логика: «Накопление» — маркетинг ограничен коэффициентом фазы (×0,85), найм заморожен, пока прибыль не станет устойчивой (текущий месяц и сумма за 3 месяца положительны) и запас ≥ 2 ФОТ; затем «Умеренный рост» — полный маркетинг и найм, но маркетинг ежемесячно ограничивается так, чтобы запас не опускался ниже цели, а найм — так, чтобы EBITDA не уходила в минус. Запас в Годах 3–5 оценён при росте ФОТ +10%/год.';
 
 buildForm(); applyScenario('base');
 </script>
